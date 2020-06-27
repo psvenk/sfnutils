@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-// TODO test with Unicode filenames
-// 2020-06-25 and 2020-06-26
+/* 8.3utils is copyright 2020 psvenk and licensed under LGPL-2.1-or-later;
+ * see files README and LICENSE for details. */
 
 enum {
 	MAX_FILES = 100,
@@ -25,15 +25,24 @@ struct fnnode {
 
 static struct fnnode *fntable[FNTABLE_SIZE];
 
+/* Converts a long filename to an 8.3 filename */
+void
+make83(struct filename *dest, char *name);
+
+/* Hash function for fntable using djb2 algorithm
+ * <http://www.cse.yorku.ca/~oz/hash.html> */
 unsigned int
 fnthash(const char *name);
 
+/* Lookup filename in fntable */
 struct fnnode *
 fntlookup(const char *name);
 
+/* Register filename in fntable */
 struct fnnode *
 fntregister(const char *name);
 
+/* Clear fntable */
 void
 fntclear(void);
 
@@ -41,7 +50,6 @@ int
 main(int argc, char **argv)
 {
 	struct filename names[MAX_FILES];
-
 	int num_files;
 
 	if (argc > 1) {
@@ -51,10 +59,10 @@ main(int argc, char **argv)
 	}
 	if (num_files < 0) {
 		perror(argv[0]);
+		return 1;
 	}
 
 	qsort(names, num_files, sizeof(struct filename), cmpfilenamep);
-
 	for (size_t i = 0; i < num_files; ++i) {
 		if (strlen(names[i].ext) > 0) {
 			printf("%-8s %-3s\n", names[i].name, names[i].ext);
@@ -62,9 +70,6 @@ main(int argc, char **argv)
 			printf("%s\n", names[i].name);
 		}
 	}
-
-	fntclear();
-
 	return 0;
 }
 
@@ -85,11 +90,11 @@ getfiles(const char *path, struct filename names[], int max_files)
 			continue;
 		}
 		strcpy(name, entry->d_name);
-		/* printf("%s", name); */
 		make83(&names[num_files], name);
 		++num_files;
 	}
 
+	fntclear();
 	closedir(dp);
 	return num_files;
 }
@@ -178,8 +183,6 @@ make83(struct filename *dest, char *orig_name)
 	free(name);
 }
 
-/* Hash function for fntable using djb2 algorithm
- * <http://www.cse.yorku.ca/~oz/hash.html> */
 unsigned int
 fnthash(const char *name)
 {
@@ -192,7 +195,6 @@ fnthash(const char *name)
 	return hash % FNTABLE_SIZE;
 }
 
-/* Lookup filename in fntable */
 struct fnnode *
 fntlookup(const char *name)
 {
@@ -204,7 +206,6 @@ fntlookup(const char *name)
 	return NULL;
 }
 
-/* Register filename in fntable */
 struct fnnode *
 fntregister(const char *name)
 {
@@ -221,7 +222,6 @@ fntregister(const char *name)
 	return n;
 }
 
-/* Clear fntable */
 void
 fntclear(void)
 {
