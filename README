@@ -3,6 +3,16 @@
 ========
 
 Utilities for formatting 8.3 filenames [1] -- mostly intended as a toy project.
+Currently only ls is implemented.
+
+
+Tentative roadmap
+=================
+
+- Allow an 8.3 path as an argument
+  + This would need a map or bidirectional map (implemented with hash tables)
+    between 8.3 and long filenames
+- Implement other tools like cd in terms of 8.3 file names
 
 
 License
