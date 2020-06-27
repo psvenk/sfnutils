@@ -1,7 +1,7 @@
 #include "ls8.3.h"
+#include "fntable.h"
 #include <ctype.h>
 #include <stdbool.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,41 +10,13 @@
  * see files README and LICENSE for details. */
 
 enum {
-	MAX_FILES = 100,
-	FNTABLE_SIZE = 100
+	MAX_FILES = 100
 };
 
-/* Linked list node in hash table mapping each base filename (before '~') to
- * the most recently used post-~ number
- * (a different file extension does not change the numbering) */
-struct fnnode {
-	char name[9];
-	uint8_t num;
-	struct fnnode *next;
-};
-
-static struct fnnode *fntable[FNTABLE_SIZE];
 
 /* Converts a long filename to an 8.3 filename */
-void
+static void
 make83(struct filename *dest, char *name);
-
-/* Hash function for fntable using djb2 algorithm
- * <http://www.cse.yorku.ca/~oz/hash.html> */
-unsigned int
-fnthash(const char *name);
-
-/* Lookup filename in fntable */
-struct fnnode *
-fntlookup(const char *name);
-
-/* Register filename in fntable */
-struct fnnode *
-fntregister(const char *name);
-
-/* Clear fntable */
-void
-fntclear(void);
 
 int
 main(int argc, char **argv)
@@ -110,7 +82,7 @@ cmpfilenamep(const void *p, const void *q)
 	return strcmp(fn1.ext, fn2.ext);
 }
 
-void
+static void
 make83(struct filename *dest, char *orig_name)
 {
 	size_t orig_len = strlen(orig_name);
@@ -181,59 +153,4 @@ make83(struct filename *dest, char *orig_name)
 	dest->name[8] = '\0';
 
 	free(name);
-}
-
-unsigned int
-fnthash(const char *name)
-{
-	unsigned int hash = 5381;
-	int c;
-
-	while (c = *name++)
-		hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
-
-	return hash % FNTABLE_SIZE;
-}
-
-struct fnnode *
-fntlookup(const char *name)
-{
-	for (struct fnnode *n = fntable[fnthash(name)]; n != NULL;
-			n = n->next) {
-		if (!strcmp(name, n->name))
-			return n;
-	}
-	return NULL;
-}
-
-struct fnnode *
-fntregister(const char *name)
-{
-	struct fnnode **list = &fntable[fnthash(name)];
-	struct fnnode *n = malloc(sizeof(struct fnnode));
-	strncpy(n->name, name, 8);
-	n->name[8] = '\0';
-	n->num = 1;
-
-	/* Add node to head of linked list */
-	n->next = *list;
-	*list = n;
-
-	return n;
-}
-
-void
-fntclear(void)
-{
-	for (int i = 0; i < FNTABLE_SIZE; ++i) {
-		struct fnnode *n = fntable[i];
-		while (n != NULL) {
-			/* Store current head of list */
-			struct fnnode *prev = n;
-			/* Move head of list forward */
-			n = n->next;
-			/* Free previous head of list */
-			free(prev);
-		}
-	}
 }
