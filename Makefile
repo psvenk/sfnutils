@@ -1,8 +1,8 @@
 .POSIX:
-CFLAGS=-g -Werror=all -Werror=switch -Wextra
+CFLAGS=-g -Werror=all -Wextra
 
-ls8.3: ls8.3.o fntable.o
-ls8.3.o: ls8.3.c ls8.3.h
+dir: dir.o fntable.o
+dir.o: dir.c dir.h
 fntable.o: fntable.c fntable.h
 clean:
-	$(RM) ls8.3 ls8.3.o fntable.o
+	$(RM) dir dir.o fntable.o

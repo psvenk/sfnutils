@@ -1,4 +1,4 @@
-#include "ls8.3.h"
+#include "dir.h"
 #include "fntable.h"
 #include <ctype.h>
 #include <stdbool.h>

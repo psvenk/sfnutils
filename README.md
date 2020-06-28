@@ -1,8 +1,8 @@
-8.3utils
+sfnutils
 ========
 
-Utilities for formatting [8.3 filenames][1] -- mostly intended as a toy
-project.  Currently only `ls` is implemented.
+Utilities for formatting [8.3 filenames][1] (**s**hort **f**ile**n**ames) --
+mostly intended as a toy project.  Currently only `dir` (`ls`) is implemented.
 
 [1]: https://en.wikipedia.org/wiki/8.3_filename
 
