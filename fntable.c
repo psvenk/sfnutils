@@ -8,7 +8,7 @@
 static struct fnnode *fntable[FNTABLE_SIZE];
 
 unsigned int
-fnthash(const char *name)
+fnthash(const char name[])
 {
 	unsigned int hash = 5381;
 	int c;
@@ -20,7 +20,7 @@ fnthash(const char *name)
 }
 
 struct fnnode *
-fntlookup(const char *name)
+fntlookup(const char name[])
 {
 	for (struct fnnode *n = fntable[fnthash(name)]; n != NULL;
 			n = n->next) {
@@ -31,7 +31,7 @@ fntlookup(const char *name)
 }
 
 struct fnnode *
-fntregister(const char *name)
+fntregister(const char name[])
 {
 	struct fnnode **list = &fntable[fnthash(name)];
 	struct fnnode *n = malloc(sizeof(struct fnnode));

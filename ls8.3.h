@@ -17,7 +17,7 @@ struct filename {
  * can store `max_files` 8.3 filenames, and return the number of files stored
  * or -1 on error. */
 int8_t
-getfiles(const char *path, struct filename names[], int max_files);
+getfiles(const char path[], struct filename names[], int max_files);
 
 /* Comparison function for struct filename * to be used with qsort */
 int

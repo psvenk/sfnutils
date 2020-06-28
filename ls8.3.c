@@ -16,10 +16,10 @@ enum {
 
 /* Converts a long filename to an 8.3 filename */
 static void
-make83(struct filename *dest, char *name);
+make83(struct filename *dest, const char orig_name[]);
 
 int
-main(int argc, char **argv)
+main(int argc, char *argv[])
 {
 	struct filename names[MAX_FILES];
 	int8_t num_files;
@@ -46,7 +46,7 @@ main(int argc, char **argv)
 }
 
 int8_t
-getfiles(const char *path, struct filename names[], int max_files)
+getfiles(const char path[], struct filename names[], int max_files)
 {
 	DIR *dp = opendir(path);
 	if (dp == NULL) {
@@ -83,15 +83,23 @@ cmpfilenamep(const void *p, const void *q)
 }
 
 static void
-make83(struct filename *dest, char *orig_name)
+make83(struct filename *dest, const char orig_name[])
 {
 	size_t orig_len = strlen(orig_name);
-	char *name = malloc((orig_len + 1) * sizeof(char));
+
+	/* Number of characters (including \0) for storing name */
+	size_t name_size;
+	if (orig_len >= 8) {
+		name_size = orig_len + 1;
+	} else {
+		name_size = 9;
+	}
+	char *name = malloc(name_size * sizeof(char));
 	strcpy(name, orig_name);
 
 	char *ext = NULL;
 	bool modified = false;
-	for (char *p = name + orig_len - 0; p >= name; --p) {
+	for (char *p = name + orig_len; p >= name; --p) {
 		if (*p >> 7 != 0 || *p == '+') {
 			/* We don't care about Unicode here */
 			*p = '_';
@@ -108,8 +116,7 @@ make83(struct filename *dest, char *orig_name)
 		}
 	}
 	if (ext == NULL) {
-		static char *emptystr = "";
-		strcpy(dest->ext, emptystr);
+		dest->ext[0] = '\0';
 	} else {
 		if (strlen(ext) > 3)
 			modified = true;
@@ -120,12 +127,12 @@ make83(struct filename *dest, char *orig_name)
 		modified = true;
 	if (modified) {
 		/* Length of base filename (portion before '~') */
-		size_t baselen = strlen(name);
-		if (baselen > 6)
-			baselen = 6;
+		size_t base_len = strlen(name);
+		if (base_len > 6)
+			base_len = 6;
 
-		/* Stop the string at baselen for now */
-		name[baselen] = '\0';
+		/* Stop the string at base_len for now */
+		name[base_len] = '\0';
 		struct fnnode *n;
 		uint8_t num;
 		if ((n = fntlookup(name)) != NULL) {
@@ -136,17 +143,17 @@ make83(struct filename *dest, char *orig_name)
 		}
 
 		if (num < 10) {
-			name[baselen] = '~';
-			name[baselen + 1] = '0' + num;
-			name[baselen + 2] = '\0';
+			name[base_len] = '~';
+			name[base_len + 1] = '0' + num;
+			name[base_len + 2] = '\0';
 		}
 		else {
-			if (baselen == 6)
-				--baselen;
-			name[baselen] = '~';
-			name[baselen + 1] = '0' + num / 10;
-			name[baselen + 2] = '0' + num % 10;
-			name[baselen + 3] = '\0';
+			if (base_len == 6)
+				--base_len;
+			name[base_len] = '~';
+			name[base_len + 1] = '0' + num / 10;
+			name[base_len + 2] = '0' + num % 10;
+			name[base_len + 3] = '\0';
 		}
 	}
 	strncpy(dest->name, name, 8);
