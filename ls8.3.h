@@ -5,6 +5,7 @@
 
 #include <dirent.h>
 #include <limits.h>
+#include <stdint.h>
 
 /* Represents an 8.3 filename */
 struct filename {
@@ -15,7 +16,7 @@ struct filename {
 /* Get a list of files at path `path` and store it in `names`, an array which
  * can store `max_files` 8.3 filenames, and return the number of files stored
  * or -1 on error. */
-size_t
+int8_t
 getfiles(const char *path, struct filename names[], int max_files);
 
 /* Comparison function for struct filename * to be used with qsort */

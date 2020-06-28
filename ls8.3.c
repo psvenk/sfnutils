@@ -22,7 +22,7 @@ int
 main(int argc, char **argv)
 {
 	struct filename names[MAX_FILES];
-	int num_files;
+	int8_t num_files;
 
 	if (argc > 1) {
 		num_files = getfiles(argv[1], names, MAX_FILES);
@@ -35,7 +35,7 @@ main(int argc, char **argv)
 	}
 
 	qsort(names, num_files, sizeof(struct filename), cmpfilenamep);
-	for (size_t i = 0; i < num_files; ++i) {
+	for (int8_t i = 0; i < num_files; ++i) {
 		if (strlen(names[i].ext) > 0) {
 			printf("%-8s %-3s\n", names[i].name, names[i].ext);
 		} else {
@@ -45,7 +45,7 @@ main(int argc, char **argv)
 	return 0;
 }
 
-size_t
+int8_t
 getfiles(const char *path, struct filename names[], int max_files)
 {
 	DIR *dp = opendir(path);
@@ -54,7 +54,7 @@ getfiles(const char *path, struct filename names[], int max_files)
 	}
 
 	struct dirent *entry;
-	size_t num_files = 0;
+	int8_t num_files = 0;
 	char name[NAME_MAX];
 	while ((entry = readdir(dp)) != NULL && num_files < max_files) {
 		if (!strcmp(entry->d_name, ".") ||
@@ -77,7 +77,7 @@ cmpfilenamep(const void *p, const void *q)
 	int result;
 	struct filename fn1 = * (struct filename *) p;
 	struct filename fn2 = * (struct filename *) q;
-	if (result = strcmp(fn1.name, fn2.name))
+	if ((result = strcmp(fn1.name, fn2.name)))
 		return result;
 	return strcmp(fn1.ext, fn2.ext);
 }

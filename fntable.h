@@ -13,8 +13,6 @@ struct fnnode {
 	struct fnnode *next;
 };
 
-static struct fnnode *fntable[FNTABLE_SIZE];
-
 /* Hash function for fntable using djb2 algorithm
  * <http://www.cse.yorku.ca/~oz/hash.html> */
 unsigned int

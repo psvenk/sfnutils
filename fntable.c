@@ -5,13 +5,15 @@
 /* 8.3utils is copyright 2020 psvenk and licensed under LGPL-2.1-or-later;
  * see files README and LICENSE for details. */
 
+static struct fnnode *fntable[FNTABLE_SIZE];
+
 unsigned int
 fnthash(const char *name)
 {
 	unsigned int hash = 5381;
 	int c;
 
-	while (c = *name++)
+	while ((c = *name++))
 		hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
 
 	return hash % FNTABLE_SIZE;
