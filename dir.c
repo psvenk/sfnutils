@@ -59,7 +59,8 @@ sfnutils_getfiles(const char path[], struct sfnutils_filename names[],
 		return -1;
 	}
 
-	struct sfnutils_fnnode *fntable[FNTABLE_SIZE];
+	struct sfnutils_fnnode **fntable = calloc(FNTABLE_SIZE,
+		sizeof(struct sfnutils_fnnode *));
 	struct dirent *entry;
 	uint8_t num_files = 0;
 	char name[NAME_MAX];
@@ -73,7 +74,7 @@ sfnutils_getfiles(const char path[], struct sfnutils_filename names[],
 		++num_files;
 	}
 
-	sfnutils_fntable_finish(fntable, FNTABLE_SIZE);
+	sfnutils_fntable_destroy(fntable, FNTABLE_SIZE);
 	closedir(dp);
 	return num_files;
 }

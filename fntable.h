@@ -28,7 +28,7 @@ sfnutils_fntable_register(struct sfnutils_fnnode *fntable[],
 		unsigned int fntable_size, const char name[]);
 
 void
-sfnutils_fntable_finish(struct sfnutils_fnnode *fntable[],
+sfnutils_fntable_destroy(struct sfnutils_fnnode *fntable[],
 		unsigned int fntable_size);
 
 #endif

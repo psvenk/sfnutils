@@ -49,7 +49,7 @@ sfnutils_fntable_register(struct sfnutils_fnnode *fntable[],
 }
 
 void
-sfnutils_fntable_finish(struct sfnutils_fnnode *fntable[],
+sfnutils_fntable_destroy(struct sfnutils_fnnode *fntable[],
 		unsigned int fntable_size)
 {
 	for (unsigned int i = 0; i < fntable_size; ++i) {
@@ -63,4 +63,5 @@ sfnutils_fntable_finish(struct sfnutils_fnnode *fntable[],
 			free(prev);
 		}
 	}
+	free(fntable);
 }
