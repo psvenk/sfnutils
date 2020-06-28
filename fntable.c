@@ -1,14 +1,12 @@
+/* sfnutils is copyright 2020 psvenk and licensed under LGPL-2.1-or-later;
+ * see files README and LICENSE for details. */
+
 #include "fntable.h"
 #include <stdlib.h>
 #include <string.h>
 
-/* 8.3utils is copyright 2020 psvenk and licensed under LGPL-2.1-or-later;
- * see files README and LICENSE for details. */
-
-static struct fnnode *fntable[FNTABLE_SIZE];
-
 unsigned int
-fnthash(const char name[])
+sfnutils_hash(const char name[], unsigned int max)
 {
 	unsigned int hash = 5381;
 	int c;
@@ -16,25 +14,29 @@ fnthash(const char name[])
 	while ((c = *name++))
 		hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
 
-	return hash % FNTABLE_SIZE;
+	return hash % max;
 }
 
-struct fnnode *
-fntlookup(const char name[])
+struct sfnutils_fnnode *
+sfnutils_fntable_lookup(struct sfnutils_fnnode *fntable[],
+		unsigned int fntable_size, const char name[])
 {
-	for (struct fnnode *n = fntable[fnthash(name)]; n != NULL;
-			n = n->next) {
+	for (struct sfnutils_fnnode *n = fntable[sfnutils_hash(
+				name, fntable_size)];
+			n != NULL; n = n->next) {
 		if (!strcmp(name, n->name))
 			return n;
 	}
 	return NULL;
 }
 
-struct fnnode *
-fntregister(const char name[])
+struct sfnutils_fnnode *
+sfnutils_fntable_register(struct sfnutils_fnnode *fntable[],
+		unsigned int fntable_size, const char name[])
 {
-	struct fnnode **list = &fntable[fnthash(name)];
-	struct fnnode *n = malloc(sizeof(struct fnnode));
+	struct sfnutils_fnnode **list = &fntable[sfnutils_hash(
+			name, fntable_size)];
+	struct sfnutils_fnnode *n = malloc(sizeof(struct sfnutils_fnnode));
 	strncpy(n->name, name, 8);
 	n->name[8] = '\0';
 	n->num = 1;
@@ -47,13 +49,14 @@ fntregister(const char name[])
 }
 
 void
-fntclear(void)
+sfnutils_fntable_finish(struct sfnutils_fnnode *fntable[],
+		unsigned int fntable_size)
 {
-	for (int i = 0; i < FNTABLE_SIZE; ++i) {
-		struct fnnode *n = fntable[i];
+	for (unsigned int i = 0; i < fntable_size; ++i) {
+		struct sfnutils_fnnode *n = fntable[i];
 		while (n != NULL) {
 			/* Store current head of list */
-			struct fnnode *prev = n;
+			struct sfnutils_fnnode *prev = n;
 			/* Move head of list forward */
 			n = n->next;
 			/* Free previous head of list */

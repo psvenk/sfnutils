@@ -1,3 +1,6 @@
+/* sfnutils is copyright 2020 psvenk and licensed under LGPL-2.1-or-later;
+ * see files README and LICENSE for details. */
+
 #include "dir.h"
 #include "fntable.h"
 #include <ctype.h>
@@ -10,31 +13,33 @@
  * see files README and LICENSE for details. */
 
 enum {
-	MAX_FILES = 100
+	MAX_FILES = 100,
+	FNTABLE_SIZE = 100
 };
-
 
 /* Converts a long filename to an 8.3 filename */
 static void
-make83(struct filename *dest, const char orig_name[]);
+filename_make(struct sfnutils_filename *dest, const char orig_name[],
+		struct sfnutils_fnnode *fntable[]);
 
 int
 main(int argc, char *argv[])
 {
-	struct filename names[MAX_FILES];
+	struct sfnutils_filename names[MAX_FILES];
 	int8_t num_files;
 
 	if (argc > 1) {
-		num_files = getfiles(argv[1], names, MAX_FILES);
+		num_files = sfnutils_getfiles(argv[1], names, MAX_FILES);
 	} else {
-		num_files = getfiles(".", names, MAX_FILES);
+		num_files = sfnutils_getfiles(".", names, MAX_FILES);
 	}
 	if (num_files < 0) {
 		perror(argv[0]);
 		return 1;
 	}
 
-	qsort(names, num_files, sizeof(struct filename), cmpfilenamep);
+	qsort(names, num_files, sizeof(struct sfnutils_filename),
+			sfnutils_filename_compare);
 	for (int8_t i = 0; i < num_files; ++i) {
 		if (strlen(names[i].ext) > 0) {
 			printf("%-8s %-3s\n", names[i].name, names[i].ext);
@@ -46,15 +51,17 @@ main(int argc, char *argv[])
 }
 
 int8_t
-getfiles(const char path[], struct filename names[], int max_files)
+sfnutils_getfiles(const char path[], struct sfnutils_filename names[],
+		int max_files)
 {
 	DIR *dp = opendir(path);
 	if (dp == NULL) {
 		return -1;
 	}
 
+	struct sfnutils_fnnode *fntable[FNTABLE_SIZE];
 	struct dirent *entry;
-	int8_t num_files = 0;
+	uint8_t num_files = 0;
 	char name[NAME_MAX];
 	while ((entry = readdir(dp)) != NULL && num_files < max_files) {
 		if (!strcmp(entry->d_name, ".") ||
@@ -62,28 +69,29 @@ getfiles(const char path[], struct filename names[], int max_files)
 			continue;
 		}
 		strcpy(name, entry->d_name);
-		make83(&names[num_files], name);
+		filename_make(&names[num_files], name, fntable);
 		++num_files;
 	}
 
-	fntclear();
+	sfnutils_fntable_finish(fntable, FNTABLE_SIZE);
 	closedir(dp);
 	return num_files;
 }
 
 int
-cmpfilenamep(const void *p, const void *q)
+sfnutils_filename_compare(const void *p, const void *q)
 {
 	int result;
-	struct filename fn1 = * (struct filename *) p;
-	struct filename fn2 = * (struct filename *) q;
+	struct sfnutils_filename fn1 = * (struct sfnutils_filename *) p;
+	struct sfnutils_filename fn2 = * (struct sfnutils_filename *) q;
 	if ((result = strcmp(fn1.name, fn2.name)))
 		return result;
 	return strcmp(fn1.ext, fn2.ext);
 }
 
 static void
-make83(struct filename *dest, const char orig_name[])
+filename_make(struct sfnutils_filename *dest, const char orig_name[],
+		struct sfnutils_fnnode *fntable[])
 {
 	size_t orig_len = strlen(orig_name);
 
@@ -133,12 +141,13 @@ make83(struct filename *dest, const char orig_name[])
 
 		/* Stop the string at base_len for now */
 		name[base_len] = '\0';
-		struct fnnode *n;
+		struct sfnutils_fnnode *n;
 		uint8_t num;
-		if ((n = fntlookup(name)) != NULL) {
+		if ((n = sfnutils_fntable_lookup(fntable, FNTABLE_SIZE, name))
+				!= NULL) {
 			num = ++n->num;
 		} else {
-			fntregister(name);
+			sfnutils_fntable_register(fntable, FNTABLE_SIZE, name);
 			num = 1;
 		}
 

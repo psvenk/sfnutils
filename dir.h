@@ -1,5 +1,8 @@
-#ifndef _LS8_3_H
-#define _LS8_3_H
+/* sfnutils is copyright 2020 psvenk and licensed under LGPL-2.1-or-later;
+ * see files README and LICENSE for details. */
+
+#ifndef SFNUTILS_DIR_H
+#define SFNUTILS_DIR_H
 
 #define _POSIX_C_SOURCE 200809L
 
@@ -8,7 +11,7 @@
 #include <stdint.h>
 
 /* Represents an 8.3 filename */
-struct filename {
+struct sfnutils_filename {
 	char name[9];
 	char ext[4];
 };
@@ -17,10 +20,11 @@ struct filename {
  * can store `max_files` 8.3 filenames, and return the number of files stored
  * or -1 on error. */
 int8_t
-getfiles(const char path[], struct filename names[], int max_files);
+sfnutils_getfiles(const char path[], struct sfnutils_filename names[],
+		int max_files);
 
 /* Comparison function for struct filename * to be used with qsort */
 int
-cmpfilenamep(const void *p, const void *q);
+sfnutils_filename_compare(const void *p, const void *q);
 
 #endif
