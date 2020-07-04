@@ -19,7 +19,7 @@ Sample output
 -------------
 
 ```console
-$ ./ls8.3 test
+$ ./dir test
 ANDR__~1 TXT
 ASDFGH~1
 ASDFGH~2
