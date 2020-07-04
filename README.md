@@ -47,7 +47,7 @@ License
 
 SPDX-License-Identifier: LGPL-2.1-or-later
 
-8.3utils: utilities for formatting 8.3 filenames
+sfnutils: utilities for formatting 8.3 filenames (short filenames)
 
 Copyright (c) 2020 psvenk
 

@@ -9,9 +9,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* 8.3utils is copyright 2020 psvenk and licensed under LGPL-2.1-or-later;
- * see files README and LICENSE for details. */
-
 enum {
 	MAX_FILES = 100,
 	FNTABLE_SIZE = 100
