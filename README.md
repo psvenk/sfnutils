@@ -17,6 +17,18 @@ Tentative roadmap
   + This would need a map or bidirectional map (implemented with hash tables)
     between 8.3 and long filenames
 - Implement other tools like `cd` in terms of 8.3 file names
+- Sort list of files before converting the files to 8.3 (this would solve
+  discrepancies between C/Rust and Go because Go sorts files differently; also,
+  C and Rust don't guarantee any particular order of files)
+
+
+Usage
+-----
+
+C: `make && ./dir test`
+Rust: `cargo run ../test`
+Go: `go run dir.go ../test`
+
 
 Sample output
 -------------
