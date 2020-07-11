@@ -4,6 +4,9 @@ sfnutils
 Utilities for formatting [8.3 filenames][1] (**s**hort **f**ile**n**ames) --
 mostly intended as a toy project.  Currently only `dir` (`ls`) is implemented.
 
+Rust and Go implementations are also included; mainly as testing grounds for
+Rust and Go.
+
 [1]: https://en.wikipedia.org/wiki/8.3_filename
 
 
@@ -64,3 +67,5 @@ details.
 You should have received a copy of the GNU Lesser General Public License along
 with this library; if not, write to the Free Software Foundation, Inc., 51
 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+
+<!-- vim: set tw=80: -->
