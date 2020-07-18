@@ -3,8 +3,7 @@ use strict;
 use warnings;
 use 5.032;
 
-my ($path) = @ARGV;
-$path = '.' unless defined $path;
+my $path = shift || '.';
 
 opendir(my $dh, $path) or die "$0: $!\n";
 my $fn_map = {};

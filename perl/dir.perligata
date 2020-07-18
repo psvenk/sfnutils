@@ -1,0 +1,160 @@
+#!/usr/bin/env perl
+
+# $0 ($PROGRAMNAME) and $! ($ERRNO) do not have Perligata names.
+# This is like 'use English;' but without underscores in variable names
+# (Perligata does not handle underscores well).
+
+# TODO make these Latin names and eventually upstream this to Perligata
+use feature 'refaliasing';
+no warnings 'experimental::refaliasing';
+\my $ERRNO = \$!;
+\my $PROGRAMNAME = \$0;
+
+# retexe does not work properly
+sub REVERSE { reverse @_ }
+
+# `digerementa sic ... cis lista` makes `sort ({...}, @list)` instead of
+# `sort {...} @list`, so a wrapper function is needed to sort properly
+sub SORT {
+	$func = shift;
+	$arr = shift;
+	sort { &$func($a, $b) } @$arr
+}
+
+# TODO use Latin variable names
+
+use Lingua::Romana::Perligata;
+adnota use Lingua::Romana::Perligata converte;
+
+ute strict.
+ute warnings.
+ute 5.032.
+
+adnota '.', '%', '-', and '~' cannot be included in Perligata string literals;
+adnota refer to them by ASCII codes instead.
+meo DOTo indementum XLVI da.
+meo PERCENTo indementum XXXVII da.
+meo HYPHENo indementum XLV da.
+meo PLUSo indementum XLIII da.
+meo TILDEo indementum CXXVI da.
+
+ARGVis decapitamentum vel DOTum meo patho da.
+
+meo dirhandleo.
+opendire dirhandleum tum pathum
+morive PROGRAMNAMEum tum biguttam tum lacunam tum ERRNOum tum novumversum.
+
+meo filesis.
+meo fnmapibus.
+meo fnmaprefo da ad fnmapibus.
+dum dirhandleum readdirementum fac sic
+	nisi
+		hoc tum DOTum aequalitas
+		hocve tum cum DOTum tum DOTum serementum aequalitas
+	fac sic
+		meo resulto hoc tum fnmaprefum sfnmakeementum da.
+		fnmaprefo secundum resultum arcessementorum da.
+		resultum filesis cumula.
+	cis 
+cis
+
+dirhandleum closedire.
+
+da meo fmto
+PERCENTum tum HYPHENum tum dictum sic 8s cis
+tum lacunam tum PERCENTum tum HYPHENum tum dictum sic 3s cis
+tum novumversum serementum.
+
+da filesis sfncmptorem tum ad filesis SORTementa.
+sic
+	fmtum tum nullimum hoc arcessementorum
+	tum primum hoc arcessementorum
+	egresso describe
+cis per in filesis fac.
+
+sfnmakeere sic
+	meo nameo his decapitamentum da.
+	meo fnmapibus da arcessementus his decapitamentum.
+
+	adnota Index of separator between filename and extension
+	meo sepio nullum tum unum demementum da.
+	adnota Whether or not the filename has been modified
+	meo modifiedo nullum da.
+
+	meis listis da
+		nullum tum
+		cum
+			cum nameum metamentum
+			tum unum
+		demementum conscribementa REVERSEementa.
+	meo io.
+	per ium in listis fac sic
+		huic nameum tum ium tum unum excerpementum da.
+		adnota Check if character is outside ASCII (0-127)
+		si
+			hoc numeramentum tum CXXVIII non praestantiam
+			hocve tum PLUSum aequalitas
+		fac sic
+			nameo ium tum unum excerpemento dictum sic _ cis da.
+			modifiedo unum da.
+			adnota Perligata has no else, so we use next
+			posterus.
+		cis
+		si
+			hoc tum DOTum aequalitas
+			iumque tum nullum non aequalitam
+			sepiumque tum cum nullum tum unum demementum aequalitam
+		fac sic
+			sepio ium da.
+			posterus.
+		cis
+		si hoc tum lacunam aequalitas hocve tum DOTum aequalitas fac sic
+			nameo ium excerpemento
+			nameum tum cum ium tum unum addementum excerpementum da.
+			sic sepio postdecresce cis si
+				sepium tum cum nullum tum unum demementum non aequalitam
+			fac.
+			modifiedo unum da.
+			posterus.
+		cis
+		nameo ium tum unum excerpemento hoc amplificamentum da.
+	cis
+	meo exto lacunam da.
+	si sepium tum cum nullum tum unum demementum non aequalitam fac sic
+		exto nameum tum cum sepium tum unum addementum excerpementum da.
+		nameo nameum tum nullum tum sepium excerpementum da.
+	cis
+
+	sic modifiedo unum da cis si
+		cum octo tum cum nameum metamentum praestantiam
+		cumve tres tum cum extum metamentum praestantiam
+	fac.
+	si modifiedum fac sic
+		nameo nameum tum nullum tum sex excerpementum da.
+
+		adnota Number to append to filename (after '~')
+		meo numo da nameo fnmapuum preincrescementum.
+		si numum tum decem non praestantiam fac sic
+			nameo nameum tum nullum tum quinque excerpementum da.
+		cis
+		nameo nameum tum TILDEum tum numum serementum da.
+	cis.
+	exto extum tum nullum tum tres excerpementum da.
+
+	meo resultis da nameum tum extum tum ad fnmapibus.
+	ad resultis redde.
+cis
+
+sfncmpere sic
+	meo resulto nullum da.
+	meo aao da nullimum aum arcessementorum.
+	meo bbo da nullimum bum arcessementorum.
+	si damentum resulto comparitias aaum tum bbum fac sic
+		resultum redde.
+	cis
+	aao da primum aum arcessementorum.
+	bbo da primum bum arcessementorum.
+	comparitias aaum tum bbum redde.
+cis.
+
+adnota vim: set ts=4 sw=4 noet:
