@@ -4,8 +4,8 @@ sfnutils
 Utilities for formatting [8.3 filenames][1] (**s**hort **f**ile**n**ames) --
 mostly intended as a toy project.  Currently only `dir` (`ls`) is implemented.
 
-Rust and Go implementations are also included; mainly as testing grounds for
-Rust and Go.
+Implementations in other languages are also included; mainly as testing grounds
+for those languages.
 
 [1]: https://en.wikipedia.org/wiki/8.3_filename
 
@@ -25,9 +25,11 @@ Tentative roadmap
 Usage
 -----
 
-C: `make && ./dir test`
-Rust: `cargo run ../test`
-Go: `go run dir.go ../test`
+- C: `make && ./dir test`
+- Rust: `cd rust && cargo run ../test`
+- Go: `cd go && go run dir.go ../test`
+- Perl: `./perl/dir.pl test`
+- Lingua::Romana::Perligata: `./perl/dir.perligata test`
 
 
 Sample output
@@ -51,6 +53,9 @@ ASDFG~12
 ASDFG~13
 ASDFG~14
 A____~1
+A~1      AB 
+C_D~1    C_D
+EIGHTCHR
 HELLO    JPG
 HELLO~1  JPE
 THISIS~1 MAF
