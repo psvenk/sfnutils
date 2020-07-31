@@ -6,6 +6,8 @@ import Data.Char
 import Text.Printf
 import Data.Maybe
 import Data.List
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.UTF8 as BSU
 
 data ShortName = ShortName
     { shortNameName  :: String
@@ -28,7 +30,7 @@ makeShortName' name m  =
         (num, m')                =
             if modified
                then mapFst (fromMaybe 1) $ Map.insertLookupWithKey
-                    (const $ const $ (+1)) fname6 1 m
+                    (const $ const $ (+1)) fname6 2 m
                else (1, m)
         fname'                   =
             if modified
@@ -40,12 +42,16 @@ makeShortName' name m  =
 -- Sanitize a file name for 8.3, returning a tuple |(name, ext, modified)|
 sanitizeName       :: String -> (String, String, Bool)
 sanitizeName name  =
-    let  transform x             = if (not $ isAscii x) || (x == '+')
-                                      then ('_', True)
-                                      else (toUpper x, False)
-         -- TODO replace wide characters with multiple underscores
+    let  transform x             =
+            case () of
+              _ | not $ isAscii x  ->
+                  -- Add one underscore for each byte in the character |x|
+                  (replicate (BS.length $ BSU.fromString [x]) '_', True)
+                | x == '+'         -> ("_",          True)
+                | otherwise        -> ([toUpper x],  False)
          -- Replace non-ASCII and |'+'| with |'_'| and convert to uppercase
-         (name', mod1)           = mapSnd or $ unzip $ map transform name
+         (name', mod1)           = map2 (foldl (++) "", or) $
+             unzip $ map transform name
          (fname, ext)            = splitAtLastMatch (=='.') name'
          -- Remove |' '| and |'.'|
          ((fname', ext'), mod2)  = mapSnd or $ unzip2 $
