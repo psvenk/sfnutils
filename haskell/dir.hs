@@ -4,44 +4,75 @@ import qualified Data.Map as Map
 import Control.Monad.Trans.State
 import Data.Char
 import Text.Printf
+import Data.Maybe
+import Data.List
 
 data ShortName = ShortName
     { shortNameName  :: String
     , shortNameExt   :: String
-    }
+    } deriving (Eq, Ord)
 instance Show ShortName where
     show (ShortName name ext) = printf "%-8s %-3s" name ext
 
--- Convert a |String| to a |ShortName|
-makeShortName       :: String -> State (Map.Map String Int) ShortName
-makeShortName name  = do
-    m <- get
-    let (fname, ext, modified) = sanitizeName name
-        fname6                 = take 6 fname
-        num                    =
+-- Convert a |String| to a |ShortName| (using |State| monad)
+makeShortName :: String -> State (Map.Map String Int) ShortName
+makeShortName name = get >>= \m -> let (sname, m') = makeShortName' name m
+                                    in put m' >> return sname
+
+-- Convert a |String| to a |ShortName| (non-monadic)
+makeShortName'         :: String -> Map.Map String Int ->
+    (ShortName, Map.Map String Int)
+makeShortName' name m  =
+    let (fname, ext, modified)   = sanitizeName name
+        fname6                   = take 6 fname
+        (num, m')                =
             if modified
-               then 1 + case Map.lookup fname6 m of
-                          Just n   -> n
-                          Nothing  -> 0
-               else 0
-    -- TODO Lookup and modify in one go (using |Map.insertLookupWithKey|)?
-    if modified then modify $ Map.insert fname6 num else return ()
-    let fname' = if modified
-                    then
-                        (if num < 10 then fname6 else take 5 fname6)
-                        ++ "~" ++ show num
-                    else fname
-    return $ ShortName fname' ext
+               then mapFst (fromMaybe 1) $ Map.insertLookupWithKey
+                    (const $ const $ (+1)) fname6 1 m
+               else (1, m)
+        fname'                   =
+            if modified
+               then (if num < 10 then fname6 else take 5 fname6)
+                    ++ "~" ++ show num
+               else fname
+     in (ShortName fname' ext, m')
 
 -- Sanitize a file name for 8.3, returning a tuple |(name, ext, modified)|
 sanitizeName       :: String -> (String, String, Bool)
 sanitizeName name  =
-    let  transform x   = if not $ isAscii x || x == '+' then '_' else toUpper x
-         name'         = map transform name
-         (fname, ext)  = splitAtLastMatch (=='.') name'
-         modified      = length fname > 8 || length ext > 3
-             || name' /= map toUpper name
-     in (take 8 fname, take 3 ext, modified)
+    let  transform x             = if (not $ isAscii x) || (x == '+')
+                                      then ('_', True)
+                                      else (toUpper x, False)
+         -- TODO replace wide characters with multiple underscores
+         -- Replace non-ASCII and |'+'| with |'_'| and convert to uppercase
+         (name', mod1)           = mapSnd or $ unzip $ map transform name
+         (fname, ext)            = splitAtLastMatch (=='.') name'
+         -- Remove |' '| and |'.'|
+         ((fname', ext'), mod2)  = mapSnd or $ unzip2 $
+             mapBoth (filter' $ \x -> x /= ' ' && x /= '.') (fname, ext)
+         modified                = length fname' > 8 || length ext' > 3
+             || mod1 || mod2
+     in (take 8 fname', take 3 ext', modified)
+
+mapFst              :: (a -> a') -> (a, b) -> (a', b)
+mapFst f (a, b)     = (f a, b)
+mapSnd              :: (b -> b') -> (a, b) -> (a, b')
+mapSnd f (a, b)     = (a, f b)
+mapBoth             :: (a -> a') -> (a, a) -> (a', a')
+mapBoth f (a, b)    = (f a, f b)
+map2                :: (a -> a', b -> b') -> (a, b) -> (a', b')
+map2 (f, g) (a, b)  = (f a, g b)
+unzip2                   :: ((a, b), (c, d)) -> ((a, c), (b, d))
+unzip2 ((a, b), (c, d))  = ((a, c), (b, d))
+
+-- Like |filter| but returning a |Bool| which is |True| iff any items failed
+-- the predicate
+filter'           :: (a -> Bool) -> [a] -> ([a], Bool)
+filter' f (x:xs)  =
+    case filter' f xs of
+      (xs', True)   -> (if f x then x:xs' else xs', True)
+      (xs', False)  -> if f x then (x:xs', False) else (xs', True)
+filter' f []      = ([], False)
 
 -- Split the list at the last value satisfing the predicate.
 -- Worst-case time complexity: $\mathcal{O}(n)$
@@ -55,9 +86,9 @@ splitAtLastMatch f []      = ([], [])
 getFiles       :: String -> IO [ShortName]
 getFiles path  = do
     names <- listDirectory path
-    -- Lists implement |Traversable|, so we can use |mapM| to thread a single
-    -- state (|Map.empty|) and run |makeShortName| on every element of the list.
-    return $ evalState (mapM makeShortName names) Map.empty
+    -- Traverse the list |names| to thread the state and run
+    -- |makeShortName| on each element of the list
+    return $ evalState (traverse makeShortName names) Map.empty
 
 main :: IO ()
 main = do
@@ -66,5 +97,4 @@ main = do
                  x : _  -> x
                  _      -> "."
     files    <- getFiles path
-    -- TODO sort |files|
-    mapM_ (putStrLn . show) files
+    mapM_ (putStrLn . show) $ sort files
