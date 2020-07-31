@@ -13,14 +13,25 @@ instance Show ShortName where
     show (ShortName name ext) = printf "%-8s %-3s" name ext
 
 -- Convert a |String| to a |ShortName|
-makeShortName       :: String -> State (Map.Map String Integer) ShortName
+makeShortName       :: String -> State (Map.Map String Int) ShortName
 makeShortName name  = do
-    put Map.empty
+    m <- get
     let (fname, ext, modified) = sanitizeName name
-    -- TODO add |'~'| and number if modified
-    -- |m <- get|
-    -- |modify (\m -> ...)|
-    return $ ShortName fname ext
+        fname6                 = take 6 fname
+        num                    =
+            if modified
+               then 1 + case Map.lookup fname6 m of
+                          Just n   -> n
+                          Nothing  -> 0
+               else 0
+    -- TODO Lookup and modify in one go (using |Map.insertLookupWithKey|)?
+    if modified then modify $ Map.insert fname6 num else return ()
+    let fname' = if modified
+                    then
+                        (if num < 10 then fname6 else take 5 fname6)
+                        ++ "~" ++ show num
+                    else fname
+    return $ ShortName fname' ext
 
 -- Sanitize a file name for 8.3, returning a tuple |(name, ext, modified)|
 sanitizeName       :: String -> (String, String, Bool)
