@@ -1,0 +1,9 @@
+dir
+*.lhs
+*.tex
+*.aux
+*.ptb
+*.pdf
+*.o
+*.hi
+*.log
