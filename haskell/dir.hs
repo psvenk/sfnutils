@@ -42,6 +42,8 @@ makeShortName' name m  =
 -- Sanitize a file name for 8.3, returning a tuple |(name, ext, modified)|
 sanitizeName       :: String -> (String, String, Bool)
 sanitizeName name  =
+    -- Return |(str, modified)| with str being the replacement for the
+    -- character and |modified| being whether or not it was modified
     let  transform x             =
             case () of
               _ | not $ isAscii x  ->
@@ -49,7 +51,6 @@ sanitizeName name  =
                   (replicate (BS.length $ BSU.fromString [x]) '_', True)
                 | x == '+'         -> ("_",          True)
                 | otherwise        -> ([toUpper x],  False)
-         -- Replace non-ASCII and |'+'| with |'_'| and convert to uppercase
          (name', mod1)           = map2 (foldl (++) "", or) $
              unzip $ map transform name
          (fname, ext)            = splitAtLastMatch (=='.') name'
@@ -90,17 +91,12 @@ splitAtLastMatch f (x:xs)  =
 splitAtLastMatch f []      = ([], [])
 
 getFiles       :: String -> IO [ShortName]
-getFiles path  = do
-    names <- listDirectory path
-    -- Traverse the list |names| to thread the state and run
-    -- |makeShortName| on each element of the list
-    return $ evalState (traverse makeShortName names) Map.empty
+getFiles path  = listDirectory path >>=
+    return . evalState . traverse makeShortName >>= return . ($ Map.empty)
 
 main :: IO ()
-main = do
-    args     <- getArgs
+main = getArgs >>= \args ->
     let path = case args of
                  x : _  -> x
                  _      -> "."
-    files    <- getFiles path
-    mapM_ (putStrLn . show) $ sort files
+     in getFiles path >>= mapM_ (putStrLn . show) . sort
