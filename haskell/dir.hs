@@ -1,12 +1,11 @@
 import qualified Data.Map as Map (Map, empty, insertLookupWithKey)
 import qualified Data.ByteString as BS (length)
 import qualified Data.ByteString.UTF8 as BSU (fromString)
-import Control.Monad.Trans.State (State, get, put, evalState)
+import Data.List (mapAccumL, sort)
 import Data.Char (isAscii, toUpper)
 import System.Environment (getArgs)
 import System.Directory (listDirectory)
 import Text.Printf (printf)
-import Data.List (sort)
 
 data ShortName = ShortName
     { shortNameName  :: String
@@ -44,11 +43,6 @@ take' n (x:xs)  = if n <= 0 then ([], True)
                             else let (xs', b) = take' (n-1) xs in (x:xs', b)
 take' _ []      = ([], False)
 
--- Convert a |String| to a |ShortName| (using |State| monad)
-makeShortName :: String -> State (Map.Map String Int) ShortName
-makeShortName name = get >>= uncurry (<*) . bimap (return, put) .
-    makeShortName' name
-
 -- Transforms a character for 8.3 sanitization; the |Bool| return value
 -- is |True| iff any modification other than uppercasing occurred
 transform :: Char -> (String, Bool)
@@ -70,10 +64,11 @@ sanitizeName name  = (fname'', ext'', modified)
               bimap (take' 8, take' 3) (fname', ext')
           modified = mod1 || mod2 || mod3
 
--- Convert a |String| to a |ShortName| (returning updated state)
-makeShortName'         :: String -> Map.Map String Int ->
-    (ShortName, Map.Map String Int)
-makeShortName' name m  =
+-- Convert a |String| to a |ShortName| with a |Map.Map String Int| keeping
+-- state
+makeShortName         :: Map.Map String Int -> String ->
+    (Map.Map String Int, ShortName)
+makeShortName m name  =
     let (fname, ext, modified)   = sanitizeName name
         fname6                   = take 6 fname
         (num, m')                =
@@ -86,11 +81,11 @@ makeShortName' name m  =
                then (if num < 10 then fname6 else take 5 fname6)
                     ++ "~" ++ show num
                else fname
-     in (ShortName fname' ext, m')
+     in (m', ShortName fname' ext)
 
 getFiles       :: String -> IO [ShortName]
 getFiles path  = listDirectory path >>=
-    return . ($ Map.empty) . evalState . traverse makeShortName
+    return . snd . mapAccumL makeShortName Map.empty
 
 main :: IO ()
 main = getArgs >>= \args ->
