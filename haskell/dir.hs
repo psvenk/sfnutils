@@ -1,7 +1,7 @@
 import qualified Data.Map as Map (Map, empty, insertLookupWithKey)
 import qualified Data.ByteString as BS (length)
 import qualified Data.ByteString.UTF8 as BSU (fromString)
-import Data.List (mapAccumL, sort)
+import Data.List (mapAccumL, uncons, sort)
 import Data.Char (isAscii, toUpper)
 import System.Environment (getArgs)
 import System.Directory (listDirectory)
@@ -16,7 +16,7 @@ instance Show ShortName where
 
 bimap (f, g) (a, b) = (f a, g b)
 dup x = (x, x)
-unzip2 ((a, b), (c, d))  = ((a, c), (b, d))
+unzipT2 ((a, b), (c, d))  = ((a, c), (b, d))
 
 -- Split the list at the last value satisfing the predicate.
 -- Worst-case time complexity: $\mathcal{O}(n)$
@@ -58,9 +58,9 @@ sanitizeName name  = (fname'', ext'', modified)
     where (name', mod1) = bimap (foldl (++) "", or) $ unzip $
               map transform name
           (fname, ext)  = splitLast (=='.') name'
-          ((fname', ext'), mod2) = bimap (id, uncurry (||)) $ unzip2 $
+          ((fname', ext'), mod2) = bimap (id, uncurry (||)) $ unzipT2 $
               bimap (dup $ filter' $ \x -> x /= ' ' && x /= '.') (fname, ext)
-          ((fname'', ext''), mod3) = bimap (id, uncurry (||)) $ unzip2 $
+          ((fname'', ext''), mod3) = bimap (id, uncurry (||)) $ unzipT2 $
               bimap (take' 8, take' 3) (fname', ext')
           modified = mod1 || mod2 || mod3
 
@@ -83,13 +83,9 @@ makeShortName m name  =
                else fname
      in (m', ShortName fname' ext)
 
-getFiles       :: String -> IO [ShortName]
-getFiles path  = listDirectory path >>=
-    return . snd . mapAccumL makeShortName Map.empty
+getFiles :: String -> IO [ShortName]
+getFiles = (snd . mapAccumL makeShortName Map.empty <$>) . listDirectory
 
 main :: IO ()
-main = getArgs >>= \args ->
-    let path = case args of
-                 x : _  -> x
-                 _      -> "."
-     in getFiles path >>= mapM_ (putStrLn . show) . sort
+main = getArgs >>= getFiles . maybe "." fst . uncons >>=
+    mapM_ (putStrLn . show) . sort
