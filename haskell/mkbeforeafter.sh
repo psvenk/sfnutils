@@ -3,6 +3,7 @@
 cat >before.lhs <<'EOF'
 \documentclass{article}
 %include polycode.fmt
+\usepackage{url}
 \begin{document}
 \begin{code}
 EOF

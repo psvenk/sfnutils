@@ -10,9 +10,7 @@ import Text.Printf (printf)
 data ShortName = ShortName
     { shortNameName  :: String
     , shortNameExt   :: String
-    } deriving (Eq, Ord)
-instance Show ShortName where
-    show (ShortName name ext) = printf "%-8s %-3s" name ext
+    } deriving (Eq, Ord, Show, Read)
 
 bimap (f, g) (a, b) = (f a, g b)
 dup x = (x, x)
@@ -86,6 +84,12 @@ makeShortName m name  =
 getFiles :: String -> IO [ShortName]
 getFiles = (snd . mapAccumL makeShortName Map.empty <$>) . listDirectory
 
+-- Custom implementations of |Show| are apparently an antipattern
+-- because they violate the law |read . show = id|
+-- (see \url{https://www.stephendiehl.com/posts/strings.html})
+shortNameToString                      :: ShortName -> String
+shortNameToString (ShortName name ext) = printf "%-8s %-3s" name ext
+
 main :: IO ()
 main = getArgs >>= getFiles . maybe "." fst . uncons >>=
-    mapM_ (putStrLn . show) . sort
+    mapM_ (putStrLn . shortNameToString) . sort
