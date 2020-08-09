@@ -3,6 +3,7 @@ import qualified Data.ByteString as BS (length)
 import qualified Data.ByteString.UTF8 as BSU (fromString)
 import Data.List (mapAccumL, uncons, sort)
 import Data.Char (isAscii, toUpper)
+import Data.Maybe (fromMaybe)
 import System.Environment (getArgs)
 import System.Directory (listDirectory)
 import Text.Printf (printf)
@@ -53,7 +54,7 @@ transform c
 -- Sanitize a file name for 8.3, returning a tuple |(name, ext, modified)|
 sanitizeName       :: String -> (String, String, Bool)
 sanitizeName name  = (fname'', ext'', modified)
-    where (name', mod1) = bimap (foldl (++) "", or) $ unzip $
+    where (name', mod1) = bimap (concat, or) $ unzip $
               map transform name
           (fname, ext)  = splitLast (=='.') name'
           ((fname', ext'), mod2) = bimap (id, uncurry (||)) $ unzipT2 $
@@ -71,8 +72,8 @@ makeShortName m name  =
         fname6                   = take 6 fname
         (num, m')                =
             if modified
-               then bimap (maybe 1 id, id) $ Map.insertLookupWithKey
-                    (const $ const $ (+1)) fname6 2 m
+               then bimap (fromMaybe 1, id) $ Map.insertLookupWithKey
+                    (const $ const (+1)) fname6 2 m
                else (1, m)
         fname'                   =
             if modified
