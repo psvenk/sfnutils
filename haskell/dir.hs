@@ -4,6 +4,7 @@ import qualified Data.ByteString.UTF8 as BSU (fromString)
 import Data.List (mapAccumL, uncons, sort)
 import Data.Char (isAscii, toUpper)
 import Data.Maybe (fromMaybe)
+import Control.Arrow ((***), first, second)
 import System.Environment (getArgs)
 import System.Directory (listDirectory)
 import Text.Printf (printf)
@@ -13,8 +14,7 @@ data ShortName = ShortName
     , shortNameExt   :: String
     } deriving (Eq, Ord, Show, Read)
 
-bimap (f, g) (a, b) = (f a, g b)
-dup x = (x, x)
+both f = f *** f
 unzipT2 ((a, b), (c, d))  = ((a, c), (b, d))
 
 -- Split the list at the last value satisfing the predicate.
@@ -54,13 +54,13 @@ transform c
 -- Sanitize a file name for 8.3, returning a tuple |(name, ext, modified)|
 sanitizeName       :: String -> (String, String, Bool)
 sanitizeName name  = (fname'', ext'', modified)
-    where (name', mod1) = bimap (concat, or) $ unzip $
+    where (name', mod1) = concat *** or $ unzip $
               map transform name
           (fname, ext)  = splitLast (=='.') name'
-          ((fname', ext'), mod2) = bimap (id, uncurry (||)) $ unzipT2 $
-              bimap (dup $ filter' $ \x -> x /= ' ' && x /= '.') (fname, ext)
-          ((fname'', ext''), mod3) = bimap (id, uncurry (||)) $ unzipT2 $
-              bimap (take' 8, take' 3) (fname', ext')
+          ((fname', ext'), mod2) = second (uncurry (||)) $ unzipT2 $
+              both (filter' $ \x -> x /= ' ' && x /= '.') (fname, ext)
+          ((fname'', ext''), mod3) = second (uncurry (||)) $ unzipT2 $
+              take' 8 *** take' 3 $ (fname', ext')
           modified = mod1 || mod2 || mod3
 
 -- Convert a |String| to a |ShortName| with a |Map.Map String Int| keeping
@@ -72,7 +72,7 @@ makeShortName m name  =
         fname6                   = take 6 fname
         (num, m')                =
             if modified
-               then bimap (fromMaybe 1, id) $ Map.insertLookupWithKey
+               then first (fromMaybe 1) $ Map.insertLookupWithKey
                     (const $ const (+1)) fname6 2 m
                else (1, m)
         fname'                   =
