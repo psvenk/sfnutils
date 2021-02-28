@@ -1,13 +1,19 @@
 /* sfnutils is copyright 2020 psvenk and licensed under LGPL-2.1-or-later;
  * see files README and LICENSE for details. */
 
-#include "dir.h"
-#include "fntable.h"
+#define _POSIX_C_SOURCE 200809L
+
 #include <ctype.h>
+#include <dirent.h>
+#include <limits.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "dir.h"
+#include "fntable.h"
 
 enum {
 	MAX_FILES = 100,

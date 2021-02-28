@@ -4,12 +4,6 @@
 #ifndef SFNUTILS_DIR_H
 #define SFNUTILS_DIR_H
 
-#define _POSIX_C_SOURCE 200809L
-
-#include <dirent.h>
-#include <limits.h>
-#include <stdint.h>
-
 /* Represents an 8.3 filename */
 struct sfnutils_filename {
 	char name[9];

@@ -20,7 +20,7 @@ unsigned int
 sfnutils_hash(const char name[], unsigned int max);
 
 struct sfnutils_fnnode *
-sfnutils_fntable_lookup(struct sfnutils_fnnode *fntable[],
+sfnutils_fntable_lookup(struct sfnutils_fnnode * const fntable[],
 		unsigned int fntable_size, const char name[]);
 
 struct sfnutils_fnnode *

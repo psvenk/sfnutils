@@ -1,9 +1,10 @@
 /* sfnutils is copyright 2020 psvenk and licensed under LGPL-2.1-or-later;
  * see files README and LICENSE for details. */
 
-#include "fntable.h"
 #include <stdlib.h>
 #include <string.h>
+
+#include "fntable.h"
 
 unsigned int
 sfnutils_hash(const char name[], unsigned int max)
@@ -18,7 +19,7 @@ sfnutils_hash(const char name[], unsigned int max)
 }
 
 struct sfnutils_fnnode *
-sfnutils_fntable_lookup(struct sfnutils_fnnode *fntable[],
+sfnutils_fntable_lookup(struct sfnutils_fnnode * const fntable[],
 		unsigned int fntable_size, const char name[])
 {
 	for (struct sfnutils_fnnode *n = fntable[sfnutils_hash(
